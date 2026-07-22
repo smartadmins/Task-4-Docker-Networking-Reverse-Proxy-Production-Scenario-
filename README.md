@@ -1,7 +1,9 @@
 # Task-4-Docker-Networking-Reverse-Proxy-Production-Scenario-
+
 This is an excellent production-style DevOps project that demonstrates Docker networking, service discovery, reverse proxying, and load balancing. It also makes a strong GitHub portfolio project for DevOps and Cloud Engineer roles.
 
 Project Structure
+
 docker-networking-reverse-proxy/
 │
 ├── docker-compose.yml
