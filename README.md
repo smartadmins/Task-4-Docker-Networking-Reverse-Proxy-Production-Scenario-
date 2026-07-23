@@ -227,7 +227,7 @@ Product Service
 ## Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/docker-networking-reverse-proxy.git
+git clone https://github.com/smartadmins/docker-networking-reverse-proxy.git
 
 cd docker-networking-reverse-proxy
 ```
@@ -309,7 +309,7 @@ docker network ls
 Inspect network
 
 ```bash
-docker network inspect docker-networking-reverse-proxy_backend
+docker network inspect 4-docker-networking-reverse-proxy-production-scenario_backend
 ```
 
 Expected containers
