@@ -1,9 +1,87 @@
-# Task-4-Docker-Networking-Reverse-Proxy-Production-Scenario-
+# 🐳 Docker Networking & Reverse Proxy with Nginx
 
-This is an excellent production-style DevOps project that demonstrates Docker networking, service discovery, reverse proxying, and load balancing. It also makes a strong GitHub portfolio project for DevOps and Cloud Engineer roles.
+> **Enterprise DevOps Scenario:** Route multiple backend microservices through a single Nginx reverse proxy using Docker Networking and Docker Compose.
 
-Project Structure
+![Docker](https://img.shields.io/badge/Docker-Networking-blue)
+![Nginx](https://img.shields.io/badge/Nginx-Reverse%20Proxy-green)
+![Node.js](https://img.shields.io/badge/Node.js-Backend-brightgreen)
+![Docker Compose](https://img.shields.io/badge/Docker%20Compose-Orchestration-orange)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
+---
+
+# 📖 Project Overview
+
+In a production microservices architecture, exposing every container directly to users is neither secure nor scalable.
+
+Instead, a **Reverse Proxy** acts as a single entry point for all incoming requests and routes traffic to the appropriate backend services.
+
+This project demonstrates how to:
+
+* Deploy multiple backend services
+* Connect containers using a custom Docker network
+* Route requests using Nginx
+* Manage the environment with Docker Compose
+* Implement production-ready reverse proxy architecture
+
+---
+
+# 🎯 Objectives
+
+* Build multiple containerized backend services
+* Configure Docker Networking
+* Deploy an Nginx Reverse Proxy
+* Route traffic using URL paths
+* Orchestrate services with Docker Compose
+* Prepare the architecture for horizontal scaling
+
+---
+
+# 🧩 Production Scenario
+
+Your organization has migrated from a monolithic application to a microservices architecture.
+
+Instead of exposing every service individually, all incoming traffic must pass through an **Nginx Reverse Proxy**.
+
+The proxy is responsible for:
+
+* Routing requests
+* Hiding internal container addresses
+* Simplifying client access
+* Preparing for future load balancing
+* Improving security
+
+---
+
+# 🏗 Architecture
+
+```text
+                    Client Browser
+                           │
+                    http://localhost
+                           │
+                           ▼
+                +----------------------+
+                |   Nginx Reverse Proxy|
+                +----------------------+
+                   │              │
+          /users   │              │  /products
+                   ▼              ▼
+         +----------------+   +-------------------+
+         | User Service   |   | Product Service   |
+         | Node.js        |   | Node.js           |
+         +----------------+   +-------------------+
+                   │              │
+                   └──────┬───────┘
+                          │
+                 Docker Custom Network
+```
+
+---
+
+# 📂 Project Structure
+
+```text
 docker-networking-reverse-proxy/
 │
 ├── docker-compose.yml
@@ -31,324 +109,413 @@ docker-networking-reverse-proxy/
     ├── users.png
     ├── products.png
     └── docker-ps.png
-Architecture
-                    Browser
-                       │
-                       ▼
-               localhost:80
-                       │
-              ┌─────────────────┐
-              │   Nginx Proxy   │
-              └─────────────────┘
-                 │           │
-                 │           │
-      /users     │           │     /products
-                 ▼           ▼
-      ┌────────────────┐  ┌─────────────────┐
-      │ User Service   │  │ Product Service │
-      │ NodeJS         │  │ NodeJS          │
-      └────────────────┘  └─────────────────┘
-                 │
-                 ▼
-          Docker Bridge Network
-Step 1 User Service
-server.js
-const express = require('express');
+```
 
-const app = express();
+---
 
-app.get('/', (req,res)=>{
-    res.send("User Service Running");
-});
+# ⚙️ Technologies Used
 
-app.listen(3000,()=>{
-    console.log("User Service Started");
-});
-package.json
-{
-  "name": "user-service",
-  "version": "1.0.0",
-  "dependencies": {
-    "express": "^4.19.2"
-  },
-  "scripts": {
-    "start": "node server.js"
-  }
-}
-Dockerfile
-FROM node:22-alpine
+| Technology        | Purpose                       |
+| ----------------- | ----------------------------- |
+| Docker            | Containerization              |
+| Docker Compose    | Multi-container orchestration |
+| Docker Networking | Service communication         |
+| Node.js           | Backend services              |
+| Express           | Web framework                 |
+| Nginx             | Reverse Proxy                 |
+| Alpine Linux      | Lightweight container images  |
 
-WORKDIR /app
+---
 
-COPY package*.json ./
+# 🚀 Application Components
 
-RUN npm install --omit=dev
+## User Service
 
-COPY . .
+Returns:
 
-EXPOSE 3000
-
-CMD ["npm","start"]
-Step 2 Product Service
-
-server.js
-
-const express = require('express');
-
-const app = express();
-
-app.get('/', (req,res)=>{
-    res.send("Product Service Running");
-});
-
-app.listen(3000,()=>{
-    console.log("Product Service Started");
-});
-
-package.json
-
-{
-  "name": "product-service",
-  "version": "1.0.0",
-  "dependencies": {
-    "express": "^4.19.2"
-  },
-  "scripts": {
-    "start": "node server.js"
-  }
-}
-
-Dockerfile
-
-FROM node:22-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-
-RUN npm install --omit=dev
-
-COPY . .
-
-EXPOSE 3000
-
-CMD ["npm","start"]
-Step 3 Nginx Configuration
-nginx.conf
-events {}
-
-http {
-
-    upstream users_backend {
-
-        server user-service:3000;
-
-    }
-
-    upstream products_backend {
-
-        server product-service:3000;
-
-    }
-
-    server {
-
-        listen 80;
-
-        location /users {
-
-            proxy_pass http://users_backend/;
-
-            proxy_set_header Host $host;
-
-            proxy_set_header X-Real-IP $remote_addr;
-
-        }
-
-        location /products {
-
-            proxy_pass http://products_backend/;
-
-            proxy_set_header Host $host;
-
-            proxy_set_header X-Real-IP $remote_addr;
-
-        }
-
-    }
-
-}
-Step 4 Nginx Dockerfile
-FROM nginx:alpine
-
-COPY nginx.conf /etc/nginx/nginx.conf
-Step 5 Docker Compose
-version: "3.9"
-
-services:
-
-  user-service:
-    build:
-      context: ./user-service
-    container_name: user-service
-    networks:
-      - backend
-
-  product-service:
-    build:
-      context: ./product-service
-    container_name: product-service
-    networks:
-      - backend
-
-  nginx:
-    build:
-      context: ./nginx
-    container_name: reverse-proxy
-    ports:
-      - "80:80"
-    depends_on:
-      - user-service
-      - product-service
-    networks:
-      - backend
-
-networks:
-
-  backend:
-    driver: bridge
-Build
-docker compose build
-Run
-docker compose up -d
-Verify
-docker ps
-
-Visit
-
-http://localhost/users
-
-Output
-
+```text
 User Service Running
+```
 
-Visit
+---
 
-http://localhost/products
+## Product Service
 
-Output
+Returns:
 
+```text
 Product Service Running
-Verify Network
-docker network ls
+```
 
-Inspect
+---
 
-docker network inspect docker-networking-reverse-proxy_backend
+## Nginx Reverse Proxy
 
-You should see
+Routes incoming requests:
+
+| URL       | Destination     |
+| --------- | --------------- |
+| /users    | User Service    |
+| /products | Product Service |
+
+---
+
+# 🌐 Docker Networking
+
+This project creates a **custom bridge network** allowing containers to communicate securely using Docker DNS.
+
+```
+Docker Network
+      │
+      ├── nginx
+      ├── user-service
+      └── product-service
+```
+
+Containers communicate internally using service names instead of IP addresses.
+
+Example:
+
+```
+http://user-service:3000
+```
+
+instead of
+
+```
+http://172.x.x.x:3000
+```
+
+---
+
+# ⚙️ Reverse Proxy Flow
+
+```
+Browser
+    │
+GET /users
+    │
+    ▼
+Nginx
+    │
+Proxy Pass
+    │
+    ▼
+User Service
+```
+
+Likewise,
+
+```
+Browser
+    │
+GET /products
+    │
+    ▼
+Nginx
+    │
+Proxy Pass
+    │
+    ▼
+Product Service
+```
+
+---
+
+# 🚀 Getting Started
+
+## Clone Repository
+
+```bash
+git clone https://github.com/yourusername/docker-networking-reverse-proxy.git
+
+cd docker-networking-reverse-proxy
+```
+
+---
+
+## Build Images
+
+```bash
+docker compose build
+```
+
+---
+
+## Start Services
+
+```bash
+docker compose up -d
+```
+
+---
+
+## Verify Running Containers
+
+```bash
+docker ps
+```
+
+Expected:
+
+```
+reverse-proxy
 
 user-service
 
 product-service
+```
 
+---
+
+# 🌍 Testing
+
+### User Service
+
+```
+http://localhost/users
+```
+
+Response
+
+```
+User Service Running
+```
+
+---
+
+### Product Service
+
+```
+http://localhost/products
+```
+
+Response
+
+```
+Product Service Running
+```
+
+---
+
+# 🔍 Verify Docker Network
+
+List networks
+
+```bash
+docker network ls
+```
+
+Inspect network
+
+```bash
+docker network inspect docker-networking-reverse-proxy_backend
+```
+
+Expected containers
+
+```
 reverse-proxy
-Bonus 1 – Load Balancing
 
-Scale User Service
+user-service
 
-docker compose up -d --scale user-service=3
+product-service
+```
 
+---
+
+# 📦 Docker Compose Services
+
+| Service         | Port | Purpose       |
+| --------------- | ---- | ------------- |
+| nginx           | 80   | Reverse Proxy |
+| user-service    | 3000 | User API      |
+| product-service | 3000 | Product API   |
+
+---
+
+# 🔀 Request Routing
+
+```
+Client Request
+       │
+       ▼
 Nginx
+   │
+   ├──────────────► /users
+   │                    │
+   │                    ▼
+   │             User Service
+   │
+   └──────────────► /products
+                        │
+                        ▼
+                 Product Service
+```
 
-upstream users_backend {
+---
 
-    server user-service:3000;
+# 💡 Bonus Features
 
-    server user-service:3000;
+## ✅ Load Balancing
 
-    server user-service:3000;
+Scale the User Service
 
-}
+```bash
+docker compose up -d --scale user-service=3
+```
 
-A more production-friendly approach is to use multiple uniquely named service instances or Docker Swarm/Kubernetes, where Nginx can balance across distinct endpoints.
+Configure Nginx using **upstream** blocks for distributing traffic across multiple instances.
 
-Bonus 2 – Custom Docker Network
-networks:
+---
 
-  backend:
+## ✅ Custom Docker Network
 
-    driver: bridge
+Create a dedicated bridge network for secure inter-container communication.
 
-    ipam:
+---
 
-      config:
+## ✅ Health Checks
 
-      - subnet: 172.30.0.0/16
-Bonus 3 – Health Check
+Monitor container health automatically.
+
+Example:
+
+```yaml
 healthcheck:
   test: ["CMD","wget","--spider","http://localhost:3000"]
   interval: 30s
   timeout: 5s
   retries: 3
-Bonus 4 – Security
+```
 
-Run Node.js as a non-root user.
+---
 
-FROM node:22-alpine
+## ✅ Security Best Practices
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+* Run containers as non-root users
+* Use lightweight Alpine images
+* Minimize Docker image size
+* Keep internal services inaccessible from outside
+* Expose only the reverse proxy
 
-WORKDIR /app
+---
 
-COPY package*.json ./
+## ✅ Production Improvements
 
-RUN npm install --omit=dev
+* HTTPS with SSL certificates
+* Rate limiting
+* Authentication
+* Caching
+* Compression (Gzip)
+* Monitoring with Prometheus & Grafana
+* Centralized logging (ELK/Loki)
+* CI/CD using GitHub Actions or Jenkins
 
-COPY . .
+---
 
-USER appuser
+# 📚 DevOps Concepts Demonstrated
 
-EXPOSE 3000
+* Docker Networking
+* Docker Compose
+* Multi-container Applications
+* Reverse Proxy
+* Nginx Configuration
+* Service Discovery
+* Microservices Architecture
+* Path-based Routing
+* Container Isolation
+* Production Networking
+* Horizontal Scaling
+* Load Balancing Fundamentals
 
-CMD ["npm","start"]
-Bonus 5 – Production Nginx
-server_tokens off;
+---
 
-gzip on;
+# 📸 Screenshots
 
-client_max_body_size 10M;
+Add screenshots to the `screenshots/` directory.
 
-proxy_read_timeout 60;
-Project Workflow
-Client Browser
-      │
-      ▼
-localhost:80
-      │
-      ▼
-Nginx Reverse Proxy
-      │
- ┌────┴────┐
- │         │
- ▼         ▼
-/users   /products
- │         │
- ▼         ▼
-User     Product
-Service  Service
- │         │
- └────┬────┘
-      ▼
-Docker Bridge Network
-DevOps concepts demonstrated
-Docker image creation for multiple microservices
-Custom Docker bridge networking
-Docker Compose orchestration
-Nginx reverse proxy configuration
-Path-based routing (/users, /products)
-Service discovery using Docker DNS
-Health checks
-Running containers as non-root users
-Production-ready Nginx hardening
-Foundation for horizontal scaling and load balancing
+Suggested images:
+
+```
+screenshots/
+│
+├── docker-ps.png
+├── docker-network.png
+├── users-page.png
+├── products-page.png
+└── nginx-container.png
+```
+
+---
+
+# 🏆 Learning Outcomes
+
+By completing this project, you will understand how to:
+
+* Build multiple Docker images
+* Connect containers through Docker networking
+* Configure an Nginx reverse proxy
+* Route traffic using URL paths
+* Orchestrate services with Docker Compose
+* Prepare applications for production deployment
+* Implement scalable microservice networking
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repository
+2. Create a feature branch
+
+```bash
+git checkout -b feature-name
+```
+
+3. Commit your changes
+
+```bash
+git commit -m "Added new feature"
+```
+
+4. Push to GitHub
+
+```bash
+git push origin feature-name
+```
+
+5. Open a Pull Request
+
+---
+
+# 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+# 👨‍💻 Author
+
+**Sudheesh K**
+
+**Senior Infrastructure Lead | DevOps & Cloud Engineer**
+
+**Skills**
+
+* Docker
+* Kubernetes
+* AWS
+* Terraform
+* Jenkins
+* GitHub Actions
+* Linux
+* Nginx
+* Ansible
+* Prometheus
+* Grafana
+
+---
+
+⭐ **If you found this project helpful, don't forget to star the repository!**
