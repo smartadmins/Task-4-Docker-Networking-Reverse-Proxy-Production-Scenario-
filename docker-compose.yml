@@ -5,21 +5,18 @@ services:
   user-service:
     build:
       context: ./user-service
-    container_name: user-service
     networks:
       - backend
 
   product-service:
     build:
       context: ./product-service
-    container_name: product-service
     networks:
       - backend
 
   nginx:
     build:
       context: ./nginx
-    container_name: reverse-proxy
     ports:
       - "80:80"
     depends_on:
